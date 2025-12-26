@@ -27,7 +27,16 @@
     <div class="card">
         <div class="card-body">
             <h2 class="text-center mb-4">Login to Your Account</h2>
-            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+             {% if messages %}
+    	      {% for category, message in messages %}
+      		<div class="alert alert-{{ category }} alert-dismissible fade show py-1" role="alert">
+        	   {{ message }}
+        	   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      		 </div>
+    	       {% endfor %}
+  	      {% endif %}
+	     {% endwith %}
             {% for field, errors in form.errors.items() %}
             <div class="alert alert-danger py-1" role="alert">
                 <strong>{{ form[field].label.text }}:</strong> {{ errors[0] }}

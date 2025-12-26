@@ -4,6 +4,7 @@ from flask import Flask
 from models import db,User
 from dotenv import load_dotenv
 from forms import LoginForm
+from werkzeug.security import generate_password_hash,check_password_hash
 import os
 load_dotenv()
 app= Flask(__name__)
@@ -31,19 +32,33 @@ def home():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        # Here you'd add user creation logic (add user to DB)
+        hashed_password = generate_password_hash(form.password.data)
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=hashed_password
+        )
+        db.session.add(user)
+        db.session.commit()
         flash('Account created for {}!'.format(form.username.data), 'success')
-        return redirect(url_for('login'))  # or wherever you want
+        return redirect(url_for('login'))  # or wherever you want to go
     return render_template('register.html', form=form)
 
+
+from werkzeug.security import check_password_hash
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    # Add authentication logic here later
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))  # Make sure you have a dashboard route
+        else:
+            flash('Login failed. Try again.', 'danger')
+            return redirect(url_for('login'))
     return render_template('login.html', form=form)
-
-
 
 
 
